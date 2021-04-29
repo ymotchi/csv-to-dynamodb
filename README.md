@@ -16,6 +16,13 @@ git clone https://github.com/ymotchi/csv-to-dynamodb.git
 ```
 
 # Usage
+Set the following environment variables:
+```text
+export AWS_ACCESS_KEY_ID=...
+export AWS_SECRET_ACCESS_KEY=...
+export AWS_REGION=...
+```
+And run
 ```bash
 # Under "csv-to-dynamodb" directory
 sbt

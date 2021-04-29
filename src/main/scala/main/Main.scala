@@ -7,6 +7,7 @@ import com.github.tototoshi.csv.CSVReader
 import java.io.File
 import scala.jdk.CollectionConverters._
 import scala.util.Using
+import scala.util.control.NonFatal
 
 object Main extends App {
 
@@ -45,7 +46,7 @@ object Main extends App {
       }
     }
   } catch {
-    case e: Exception =>
+    case NonFatal(e) =>
       e.printStackTrace()
   }
 
@@ -59,6 +60,7 @@ object DynamoType {
   def valueOf(value: String): DynamoType = value match {
     case "string" => DynamoString
     case "number" => DynamoNumber
+    case "boolean" => DynamoBoolean
     case t => throw new Exception(s"無効な型名です: $t")
   }
 }
