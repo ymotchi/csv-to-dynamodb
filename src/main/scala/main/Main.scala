@@ -1,8 +1,8 @@
 package main
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder
-import com.amazonaws.services.dynamodbv2.model.{AttributeValue, PutItemRequest}
-import com.github.tototoshi.csv.CSVReader
+import com.github.tototoshi.csv._
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient
+import software.amazon.awssdk.services.dynamodb.model.{AttributeValue, PutItemRequest}
 
 import java.io.File
 import scala.jdk.CollectionConverters._
@@ -23,7 +23,7 @@ object Main extends App {
 
     val tableName = args(1)
 
-    val dynamoDb = AmazonDynamoDBClientBuilder.standard().build()
+    val dynamoDb = DynamoDbClient.builder().build()
 
     Using(CSVReader.open(filePath)) { reader =>
       val iterator = reader.iterator
@@ -42,14 +42,17 @@ object Main extends App {
       }.toMap).foreach {
         item =>
           println(item)
-          dynamoDb.putItem(new PutItemRequest(tableName, item.asJava))
+          val request = PutItemRequest.builder()
+            .tableName(tableName)
+            .item(item.asJava)
+            .build()
+          dynamoDb.putItem(request)
       }
     }
   } catch {
     case NonFatal(e) =>
       e.printStackTrace()
   }
-
 }
 
 sealed trait DynamoType {
@@ -66,17 +69,17 @@ object DynamoType {
 }
 
 object DynamoString extends DynamoType {
-  override def typed(value: String): AttributeValue = new AttributeValue().withS(value)
+  override def typed(value: String): AttributeValue = AttributeValue.builder().s(value).build()
 }
 
 object DynamoNumber extends DynamoType {
-  override def typed(value: String): AttributeValue = new AttributeValue().withN(value)
+  override def typed(value: String): AttributeValue = AttributeValue.builder().n(value).build()
 }
 
 object DynamoBoolean extends DynamoType {
-  override def typed(value: String): AttributeValue = new AttributeValue().withBOOL(value match {
+  override def typed(value: String): AttributeValue = AttributeValue.builder().bool(value match {
     case "1" => true
     case "0" => false
     case v => v.toBoolean
-  })
+  }).build()
 }
